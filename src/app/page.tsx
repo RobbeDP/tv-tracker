@@ -1,16 +1,39 @@
-import { AuthStatus } from "@/components/auth/auth-status";
+import { FeatureGrid } from "@/components/landing/feature-grid";
+import { LandingHero } from "@/components/landing/landing-hero";
+import { TrendingPreview } from "@/components/landing/trending-preview";
+import { SiteHeader } from "@/components/layout/site-header";
+import { tmdbBackdropUrl } from "@/lib/tmdb/tmdb-client";
+import { getTrendingTvShows } from "@/lib/tmdb/tmdb-service";
+import type { TvShow } from "@/lib/tmdb/types";
 
-export default function Home() {
+export default async function Home() {
+  let trending: TvShow[] = [];
+  try {
+    trending = await getTrendingTvShows();
+  } catch {
+    trending = [];
+  }
+
+  const featured = trending.find((show) => show.backdropPath) ?? null;
+  const heroBackdropUrl = tmdbBackdropUrl(featured?.backdropPath ?? null);
+
   return (
-    <div className="flex flex-1 flex-col items-center justify-center bg-zinc-50 px-6 py-24 dark:bg-zinc-950">
-      <main className="w-full max-w-lg text-center">
-        <p className="text-sm font-medium uppercase tracking-widest text-zinc-500">tv-tracker</p>
-        <h1 className="mt-4 text-4xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-          TV Tracker
-        </h1>
-        <div className="mt-8">
-          <AuthStatus />
-        </div>
+    <div className="min-h-full bg-zinc-50 dark:bg-zinc-950">
+      <SiteHeader />
+
+      <main>
+        <LandingHero
+          backdropUrl={heroBackdropUrl}
+          featuredName={featured?.name ?? null}
+        />
+
+        <section className="mx-auto max-w-6xl px-6 py-16">
+          <FeatureGrid />
+        </section>
+
+        <section className="mx-auto max-w-6xl px-6 pb-20">
+          <TrendingPreview shows={trending} />
+        </section>
       </main>
     </div>
   );
